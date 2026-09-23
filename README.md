@@ -44,7 +44,7 @@ session.
 Dice stays at **0.9450** across all five (200 held-out Kvasir-SEG images). FP16 flips only
 **0.0033 %** of pixels at the 0.5 threshold (about 2 pixels in a 256×256 mask).
 
-https://github.com/user-attachments/assets/00eb5836-3664-4e8b-b30e-39c014cfacd8
+https://github.com/user-attachments/assets/74dfc5f8-6534-4d92-88c7-d6004a217440
 
 The bottom row of the table, running: TensorRT FP16 engine, 720×576 source, overlay composed on the
 GPU. Mask area is printed per frame. Rendered by `src/make_demo.py --trt fp16`, so what is shown is
