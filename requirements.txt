@@ -12,6 +12,8 @@ albumentations>=1.1.0
 # video / imaging
 opencv-python==5.0.0
 pillow>=10.0                 # only for src/make_gif.py
+imageio-ffmpeg>=0.6          # only for src/make_clip.py: OpenCV here can only
+                             # write mp4v, which no browser plays
 
 # ONNX
 onnx==1.23.0
