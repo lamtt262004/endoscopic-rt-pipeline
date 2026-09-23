@@ -1,4 +1,4 @@
-"""diag_02_cudagraph.py — Ngay 1b. Van khong can video."""
+"""diag_02_cudagraph.py — CUDA Graph vs eager, do paired trong cung mot lan chay."""
 import statistics
 import sys
 import threading

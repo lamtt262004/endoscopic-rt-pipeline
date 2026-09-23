@@ -9,7 +9,7 @@ from bench_utils import load_pmfnet, setup_measurement_env
 from video_infer import GpuPreprocess, GraphInfer, postprocess, overlay
 
 VIDEOS = [
-    ("0220d11b-ab12-4b02-93ce-5d7c205c7043", "polyp bleeding",      "Ngay 2 (ca de, da do)"),
+    ("0220d11b-ab12-4b02-93ce-5d7c205c7043", "polyp bleeding",      "ca de, da do"),
     ("76866169-2d53-4a09-a1f5-2cb2b2a89b23", "small polyp",         "ca kho: polyp nho"),
     ("5af764dc-1c6a-4b01-9e50-a8d3a7d0e4e8", "flat polyp",          "ca kho nhat: polyp det"),
     ("164c76bd-9b62-4b9e-a2a4-2e4a5f7e1a3f", "cecum ileocecal valve", "doi chung am: khong polyp"),

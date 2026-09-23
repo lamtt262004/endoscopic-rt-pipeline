@@ -1,5 +1,5 @@
 """
-calib_loader.py — Ngay 5. Nap du lieu calibration cho int8.
+calib_loader.py — Nap du lieu calibration cho int8.
 
     python src/calib_loader.py            # tu kiem tra: nap thu, in thong ke activation
 """

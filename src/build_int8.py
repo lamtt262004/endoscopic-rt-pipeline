@@ -1,5 +1,5 @@
 """
-build_int8.py — Ngay 5-6. Luong tu hoa int8 bang PTQ + calibration.
+build_int8.py — Luong tu hoa int8 bang PTQ + calibration.
 
     python src/build_int8.py                    # build ca hai calibrator + do
     python src/build_int8.py --skip-build       # dung engine da co

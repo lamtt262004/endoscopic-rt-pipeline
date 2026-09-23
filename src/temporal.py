@@ -1,5 +1,5 @@
 """
-temporal.py — Ngay 7. Loc thoi gian cho mask, va do danh doi cua no.
+temporal.py — Loc thoi gian cho mask, va do danh doi cua no.
 
     python src/temporal.py                  # quet tham so, in duong cong danh doi
     python src/temporal.py --n 500

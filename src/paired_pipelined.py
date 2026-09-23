@@ -10,7 +10,7 @@ from video_infer import GpuPreprocess, GraphInfer, run_pipelined
 
 SCRATCH = ROOT / "benchmarks" / "_tmp"
 SCRATCH.mkdir(parents=True, exist_ok=True)
-VIDEOS = [("0220d11b", "polyp bleeding (Ngay 2)"),
+VIDEOS = [("0220d11b", "polyp bleeding"),
           ("76866169", "small polyp"),
           ("5af764dc", "flat polyp")]
 N = 300

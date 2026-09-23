@@ -103,7 +103,7 @@ def main():
 
     for t, p in paths.items():
         n, w, io, tac, int8, no_json = count(p)
-        print(f"\n{'='*76}\n{t}  —  {n} layer\n{'='*76}")
+        print(f"\n{'='*76}\n{t}  — {n} layer\n{'='*76}")
 
         print(f"  {'kieu trong so':26} {'kernel (tu TacticName)':30}")
         print("  " + "-" * 62)

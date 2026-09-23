@@ -1,5 +1,5 @@
 """
-make_gif.py — Ngay 7. Cat mot doan demo_*.mp4 thanh GIF de nhung vao readme.
+make_gif.py — Cat mot doan demo_*.mp4 thanh GIF de nhung vao README.
 
     python src/make_gif.py                          # tu chon doan dep nhat
     python src/make_gif.py --start 240 --len 100

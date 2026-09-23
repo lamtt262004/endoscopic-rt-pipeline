@@ -1,5 +1,5 @@
 """
-export_onnx.py — Ngay 3. PMFNet -> ONNX, thu ca hai exporter roi so sanh.
+export_onnx.py — PMFNet -> ONNX, thu ca hai exporter roi so sanh.
 
     python src/export_onnx.py              # export ca hai + onnxsim + validate
     python src/export_onnx.py --n 20       # so anh dung de validate
@@ -237,7 +237,7 @@ def main():
         best = min(good.items(),
                    key=lambda kv: (not kv[1]["passed"],
                                    kv[1]["nodes_after"] or kv[1]["nodes_before"]))
-        print(f"\n  => Dung ban '{best[0]}' cho Ngay 4: it node nhat trong so cac ban dat.")
+        print(f"\n  => Dung ban '{best[0]}': it node nhat trong so cac ban dat.")
         print(f"     File: onnx/pmfnet_{best[0]}.onnx")
         print("     Node cang it + gian giao cang it => TensorRT cang de fuse.")
 

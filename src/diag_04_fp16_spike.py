@@ -1,5 +1,5 @@
 """
-diag_04_fp16_spike.py — Ngay 4b. Truy cai spike cua TRT fp16.
+diag_04_fp16_spike.py — Truy cai spike cua TRT fp16.
 
     python src/diag_04_fp16_spike.py
     python src/diag_04_fp16_spike.py --iters 400 --engines fp16,tf32,fp32
@@ -91,7 +91,7 @@ def main():
     x = torch.randn(1, 3, 256, 256, device="cuda")
 
     print("=" * 84)
-    print("ngay 4b — tiem khoang nghi CPU, xem spike co moc ra khong")
+    print("Tiem khoang nghi CPU, xem spike co moc ra khong")
     print("=" * 84)
     print("Gia thuyet: fp16 xong som -> GPU ranh lau hon -> ha xung -> frame sau cham.")
     print(f"\nMoi o: {args.iters} iter. Hai engine do xen ke trong cung mot delay.")

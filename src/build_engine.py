@@ -1,5 +1,5 @@
 """
-build_engine.py — Ngay 4. ONNX -> TensorRT engine, do fusion / toc do / do chinh xac.
+build_engine.py — ONNX -> TensorRT engine, do fusion / toc do / do chinh xac.
 
     python src/build_engine.py                 # build + do het (mac dinh)
     python src/build_engine.py --skip-build     # dung .engine da co, chi do lai
@@ -311,7 +311,7 @@ def main():
     print(f"\n{'='*78}\n5. doi chieu ngan sach\n{'='*78}")
     print(f"  Nhanh nhat: {best} = {b.mean_ms:.3f} ms "
           f"({base.mean_ms/b.mean_ms:.2f}x so voi PyTorch+CUDA Graph)")
-    print(f"  Muc tieu Ngay 4: infer <= 9.3 ms de latency noi tiep co ghi video < 16.7 ms")
+    print(f"  Muc tieu: infer <= 9.3 ms de latency noi tiep co ghi video < 16.7 ms")
     print(f"  -> {'dat' if b.mean_ms <= 9.3 else 'chua dat'} "
           f"({b.mean_ms:.3f} vs 9.3, con thieu {max(0, b.mean_ms-9.3):.3f} ms)")
     e2e_est = 20.10 - base.mean_ms + b.mean_ms

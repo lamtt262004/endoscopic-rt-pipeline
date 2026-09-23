@@ -1,4 +1,4 @@
-"""diag_01_async.py — Lab Ngay 1. Khong can video, khong can anh."""
+"""diag_01_async.py — Chan doan nghen: sync, launch-bound, profiler, throttling."""
 import sys
 import time
 from pathlib import Path
@@ -17,7 +17,7 @@ BUDGET_MS = 16.7
 @torch.inference_mode()
 def exp_a_why_sync(model, x, n=100):
     print("\n" + "=" * 72)
-    print("thi nghiem A — vi sao phai synchronize()")
+    print("A. Vi sao phai synchronize()")
     print("=" * 72)
 
     for _ in range(20):
@@ -62,14 +62,13 @@ def exp_a_why_sync(model, x, n=100):
     print()
     print(f"  Cach 2 vs cach 3: {t_tail_sync:.2f} vs {t_full_sync:.2f} ms")
     print("Cach 3 lon hon vi moi vong bi chan -> mat overlap CPU/GPU.")
-    print("        do rieng >= latency do lien mach'.")
     return t_no_sync, t_tail_sync, t_full_sync
 
 
 @torch.inference_mode()
 def exp_b_launch_bound(model, x, n_list=(1, 2, 5, 10, 50, 200)):
     print("\n" + "=" * 72)
-    print("thi nghiem B — nghen o CPU hay GPU?")
+    print("B. Nghen o CPU hay GPU?")
     print("=" * 72)
 
     for _ in range(50):
@@ -99,11 +98,11 @@ def exp_b_launch_bound(model, x, n_list=(1, 2, 5, 10, 50, 200)):
     r1 = ratios[0]
     print(f"  Chi doc r(n=1) = {r1:.2f} — cac n lon hon deu qua tran hang doi (~1024).")
     if r1 > 0.8:
-        print("goi Y: launch-bound. Nhung n=1 (~700 launch) da gan tran -> cho Thi nghiem E.")
+        print("goi Y: launch-bound. Nhung n=1 (~700 launch) da gan tran -> cho muc E.")
     elif r1 < 0.3:
-        print("  goi Y: GPU-bound. Cho Thi nghiem E xac nhan.")
+        print("  goi Y: GPU-bound. Cho muc E xac nhan.")
     else:
-        print("  goi Y: o giua. Cho Thi nghiem E.")
+        print("  goi Y: o giua. Cho muc E.")
     return ratios, cpu_ms_n1
 
 
@@ -113,7 +112,7 @@ def exp_e_gpu_busy(model, x, wall_ms_clean, cpu_ms, n=20):
     from torch.profiler import ProfilerActivity, profile
 
     print("\n" + "=" * 72)
-    print("thi nghiem E — GPU ban bao nhieu % thoi gian? (bang chung dut diem)")
+    print("E. GPU ban bao nhieu % thoi gian? (bang chung dut diem)")
     print("=" * 72)
 
     for _ in range(20):
@@ -141,7 +140,7 @@ def exp_e_gpu_busy(model, x, wall_ms_clean, cpu_ms, n=20):
     n_aten = sum(e.count for e in aten_ops) / n
     busy = gpu_ms / wall_ms_clean
 
-    print(f"  wall-clock sach     : {wall_ms_clean:7.2f} ms/iter  (Thi nghiem A, cach 3)")
+    print(f"  wall-clock sach     : {wall_ms_clean:7.2f} ms/iter  (muc A, cach 3)")
     print(f"  wall-clock co prof  : {wall_profiled:7.2f} ms/iter  (phinh ~{wall_profiled/wall_ms_clean:.0%} — dung de chia!)")
     print(f"  GPU thuc su ban     : {gpu_ms:7.2f} ms/iter")
     print(f"  GPU ranh (gap)      : {wall_ms_clean - gpu_ms:7.2f} ms/iter")
@@ -151,7 +150,7 @@ def exp_e_gpu_busy(model, x, wall_ms_clean, cpu_ms, n=20):
     print(f"  so ATen op          : {n_aten:.0f} / forward (ke ca op long nhau)")
     print()
     print("  --- mo hinh: wall ~ max(CPU, GPU), khong phai tong ---")
-    print(f"    chi phi CPU (enqueue, Thi nghiem B n=1) : {cpu_ms:6.2f} ms")
+    print(f"    chi phi CPU (enqueue, muc B n=1) : {cpu_ms:6.2f} ms")
     print(f"    chi phi GPU (kernel time)               : {gpu_ms:6.2f} ms")
     print(f"    wall-clock thuc te                      : {wall_ms_clean:6.2f} ms")
     print(f"    max(CPU, GPU)                           : {max(cpu_ms, gpu_ms):6.2f} ms  <-- khop")
@@ -166,7 +165,7 @@ def exp_e_gpu_busy(model, x, wall_ms_clean, cpu_ms, n=20):
     print()
     if busy < 0.5:
         print(f"  ket luan: launch-bound. GPU ranh {(1-busy)*100:.0f}% thoi gian.")
-        print("  -> Ngay 2: CUDA Graphs / torch.compile('reduce-overhead') truoc TensorRT.")
+        print("  -> CUDA Graphs / torch.compile('reduce-overhead') truoc TensorRT.")
     else:
         print(f"  ket luan: GPU ban {busy*100:.0f}% — chu yeu GPU-bound.")
         print("  Gia thuyet 'launch-bound' ban dau bi bac bo bang so do.")
@@ -186,7 +185,7 @@ def exp_e_gpu_busy(model, x, wall_ms_clean, cpu_ms, n=20):
 
 def exp_c_baseline(model, x):
     print("\n" + "=" * 72)
-    print("thi nghiem C — baseline dung luat (50 warm-up + 500 iter)")
+    print("C. Baseline dung luat (50 warm-up + 500 iter)")
     print("=" * 72)
 
     stats, samples = bench(lambda: model(x), warmup=50, iters=500,
@@ -198,7 +197,7 @@ def exp_c_baseline(model, x):
 
     if stats.jitter > 1.5:
         print(f"\n  [!] jitter = {stats.jitter:.2f}x (>1.5) -> co van de that su,")
-        print("      khong phai nhieu ngau nhien. Xem Thi nghiem D.")
+        print("      khong phai nhieu ngau nhien. Xem muc D.")
 
     import numpy as np
     a = np.asarray(samples)
@@ -218,7 +217,7 @@ def exp_d_thermal(model, x, seconds=30):
     import threading
 
     print("\n" + "=" * 72)
-    print(f"thi nghiem D — chay lien tuc {seconds}s, probe o thread rieng")
+    print(f"D. Chay lien tuc {seconds}s, probe o thread rieng")
     print("=" * 72)
     print(f"  {'t(s)':>5} | {'sm_mhz':>7} | {'temp':>5} | {'power':>6} | {'util':>5} | throttle")
     print("  " + "-" * 68)
@@ -302,7 +301,7 @@ def main():
         "env": env,
         "env_after": query_gpu_state(),
     })
-    print("\n  [xong] Con so quyet dinh Ngay 2 nam o Thi nghiem E: ty le GPU ban.")
+    print("\n  Con so quan trong nhat nam o muc E: ty le GPU ban.")
 
 
 if __name__ == "__main__":

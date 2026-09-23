@@ -171,8 +171,8 @@ def main():
     print()
     if on["eager"].mean_ms > off["eager"].mean_ms and \
        on["graph"].mean_ms < off["graph"].mean_ms:
-        print("=> eager cham di trong khi graph nhanh len: eager dang bi chan boi CPU.")
-        print("       thi khong giup gi, tham chi phan tac dung'.")
+        print("=> eager cham di trong khi graph nhanh len: eager dang bi chan boi CPU,")
+        print("   nen cai thien GPU khong the hien ra.")
     print(f"\n    ket luan: dung tf32 matmul chung voi CUDA Graph "
           f"-> {off['graph'].mean_ms:.2f} -> {on['graph'].mean_ms:.2f} ms.")
     print("    Va nho ghi vao bang benchmark: day khong con la 'fp32' nua.")
