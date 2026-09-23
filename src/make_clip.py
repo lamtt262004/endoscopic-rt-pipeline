@@ -1,5 +1,7 @@
 """
 make_clip.py - cat doan dep nhat cua demo thanh clip ngan de nhung vao README.
+Chuyen luon moov len dau file de trinh duyet phat duoc ngay, khong phai doi
+tai het (OpenCV mac dinh ghi moov o cuoi).
 
     python src/make_clip.py                      # tu chon doan
     python src/make_clip.py --secs 12 --start 219
@@ -13,6 +15,47 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "benchmarks"
+
+
+def faststart(path):
+    d = path.read_bytes()
+    boxes, off = {}, 0
+    while off < len(d) - 8:
+        n = int.from_bytes(d[off:off + 4], "big")
+        if n < 8:
+            break
+        boxes[d[off + 4:off + 8].decode("latin-1", "replace")] = (off, n)
+        off += n
+    if "moov" not in boxes or "mdat" not in boxes:
+        return False
+    (mo, mn), (do, dn) = boxes["moov"], boxes["mdat"]
+    if mo < do:
+        return False
+
+    moov = bytearray(d[mo:mo + mn])
+
+    def patch(buf, base=0):
+        i = 0
+        while i < len(buf) - 8:
+            n = int.from_bytes(buf[i + base:i + base + 4], "big")
+            t = bytes(buf[i + base + 4:i + base + 8]).decode("latin-1", "replace")
+            if n < 8:
+                break
+            if t in ("moov", "trak", "mdia", "minf", "stbl"):
+                patch(buf, base + i + 8)
+            elif t in ("stco", "co64"):
+                w = 4 if t == "stco" else 8
+                p = base + i + 16
+                cnt = int.from_bytes(buf[base + i + 12:base + i + 16], "big")
+                for k in range(cnt):
+                    q = p + k * w
+                    v = int.from_bytes(buf[q:q + w], "big") + mn
+                    buf[q:q + w] = v.to_bytes(w, "big")
+            i += n
+
+    patch(moov)
+    path.write_bytes(d[:do] + bytes(moov) + d[do:do + dn])
+    return True
 
 
 def load_areas(path):
@@ -72,8 +115,10 @@ def main():
     cap.release()
     wr.release()
 
+    moved = faststart(out)
     mb = out.stat().st_size / 1e6
     print(f"  {out.name}: {k} frame @ {fps:.0f} fps = {k/fps:.1f}s | {w}x{h} | {mb:.2f} MB")
+    print(f"  faststart: {'moov chuyen len dau, stream duoc ngay' if moved else 'khong can'}")
     if mb > 10:
         print(f"  vuot 10 MB - giam --secs")
     else:
