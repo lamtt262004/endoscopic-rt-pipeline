@@ -44,7 +44,7 @@ session.
 Dice stays at **0.9450** across all five (200 held-out Kvasir-SEG images). FP16 flips only
 **0.0033 %** of pixels at the 0.5 threshold (about 2 pixels in a 256×256 mask).
 
-![demo](benchmarks/demo_polyp.gif)
+https://github.com/user-attachments/assets/00eb5836-3664-4e8b-b30e-39c014cfacd8
 
 The bottom row of the table, running: TensorRT FP16 engine, 720×576 source, overlay composed on the
 GPU. Mask area is printed per frame. Rendered by `src/make_demo.py --trt fp16`, so what is shown is
@@ -166,9 +166,9 @@ python src/video_infer.py --trt fp16 --video 76866169 --n 400
 python src/diag_05_live_rate.py
 python src/count_precision.py
 
-# demo video and gif
+# demo video, and the clip embedded above
 python src/make_demo.py --n 500 --trt fp16
-python src/make_gif.py --src demo_polyp
+python src/make_clip.py --secs 12
 ```
 
 Videos are selected by clinical label rather than by UUID:
@@ -221,7 +221,8 @@ python src/video_infer.py --video 1de3ef0f --n 400
 | file | purpose |
 |---|---|
 | `make_demo.py` | paired demo videos, with and without a polyp |
-| `make_gif.py` | README gif |
+| `make_clip.py` | trims the demo to the clip embedded above |
+| `make_gif.py` | gif export, if a self-playing image is preferred |
 
 ## Model
 

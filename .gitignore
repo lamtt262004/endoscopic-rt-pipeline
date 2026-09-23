@@ -19,14 +19,15 @@ engines/
 *.ckpt
 
 # ── Generated media ────────────────────────────────────────────────────
-# Keep: benchmarks/demo_polyp.gif  (embedded in README)
-# Keep: benchmarks/results.jsonl   (all measurements + their conditions)
+# The demo clip is not committed: it lives on GitHub's attachment CDN and is
+# embedded in the README by URL. Regenerate locally with src/make_clip.py.
+# Keep: benchmarks/results.jsonl  (all measurements + their conditions)
 benchmarks/*.mp4
 benchmarks/*.avi
+benchmarks/*.gif
 benchmarks/_*
 benchmarks/_tmp/
 benchmarks/_smoke/
-!benchmarks/demo_polyp.gif
 !benchmarks/results.jsonl
 
 # ── Python ─────────────────────────────────────────────────────────────
