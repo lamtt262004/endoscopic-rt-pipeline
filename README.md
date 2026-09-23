@@ -74,7 +74,27 @@ of how the benchmark feeds the GPU rather than a property of the deployment. For
 busy with filler work removes the effect completely, but costs more in median latency than it
 recovers in the tail.
 
-The pipeline still keeps up with a 25 fps source - latency p50 is 26.9 ms against a 40 ms budget.
+### Measured at the real feed rate
+
+The table above times inference on its own, with the GPU forced to sit idle between calls. Running
+the full threaded pipeline instead, with frames arriving on a fixed cadence, gives a milder picture —
+three runs of 300 frames each:
+
+| source | frame budget | latency p99 | over budget | output rate | queue depth |
+|---|---|---|---|---|---|
+| 25 fps | 40.0 ms | 30.6 ms | **0.7 %** | 25.0 fps | 0–1 |
+| 30 fps | 33.3 ms | 30.5 ms | 1.0 % | 30.0 fps | 0–1 |
+| 40 fps | 25.0 ms | 36.5 ms | 6–13 % | 39.9 fps | 1–2 |
+| 60 fps | 16.7 ms | 64.9 ms | **44–89 %** | 59.7 fps | 3 |
+
+**Throughput keeps up at every rate** — output matches input and the queue never exceeds three
+frames. What fails is the latency budget, and only once the source is fast enough to shrink it.
+
+Median latency also stays at 16–21 ms across all four rates, rather than tracking the 7.19 → 19.23 ms
+slowdown measured on inference alone. **Threading is its own keep-alive**: decoding frame *k+1* and
+encoding frame *k−1* overlap the GPU work for frame *k*, so the card never idles long enough to drop
+to 439 MHz. The effect that made inference 2.7× slower in isolation is largely absorbed by the
+pipeline that ships. Reproduce with `src/video_infer.py --live 25,30,40,60`.
 
 
 ## Quantization

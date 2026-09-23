@@ -120,8 +120,8 @@ def verify_preprocess(model, n=100):
         d_pair.append(dice_iou(m_gpu, m_cv2.cpu().numpy())[0])
 
     d_gpu, d_cv2, d_pair = map(np.array, (d_gpu, d_cv2, d_pair))
-    print(f"  Dice cv2 (moc cu)        : {d_cv2.mean():.4f}")
-    print(f"  Dice GPU (duong moi)     : {d_gpu.mean():.4f}   (delta {d_gpu.mean()-d_cv2.mean():+.5f})")
+    print(f"  Dice cv2 (mốc cũ)        : {d_cv2.mean():.4f}")
+    print(f"  Dice GPU (đường mới)     : {d_gpu.mean():.4f}   (Δ {d_gpu.mean()-d_cv2.mean():+.5f})")
     print(f"  Dice GPU vs cv2          : {d_pair.mean():.4f}   <- 1.0000 la trung khit")
     print(f"  pixel doi nhan @0.5      : {np.mean(flips)*100:.4f} %")
     print(f"  max |delta xac suat|     : {max(diffs):.2e}   (chi tham khao)")
@@ -262,6 +262,81 @@ def run_pipelined(path, pre, infer, n, hw_accel, writer=None, qsize=8):
     return k, (time.perf_counter() - t0)
 
 
+@torch.inference_mode()
+def run_live(path, pre, infer, n, hw_accel, writer=None, src_fps=25.0, qsize=8,
+             warmup=40):
+    h, w = pre.pinned.shape[:2]
+    q_in = queue.Queue(maxsize=qsize)
+    q_out = queue.Queue(maxsize=qsize) if writer else None
+    period = 1.0 / src_fps
+    qdepth = []
+
+    def decoder(t0):
+        cap = _open(path, hw_accel)
+        for k in range(n):
+            due = t0 + k * period
+            gap = due - time.perf_counter()
+            if gap > 0:
+                time.sleep(gap)
+            ok, f = cap.read()
+            if not ok:
+                cap.release()
+                cap = _open(path, hw_accel)
+                ok, f = cap.read()
+            qdepth.append(q_in.qsize())
+            q_in.put((due, f))
+        q_in.put(None)
+        cap.release()
+
+    def encoder():
+        while True:
+            item = q_out.get()
+            if item is None:
+                break
+            writer.write(item)
+
+    out_pin = torch.empty((h, w, 3), dtype=torch.uint8, pin_memory=True)
+
+    cap_w = _open(path, hw_accel)
+    for _ in range(warmup):
+        ok, f = cap_w.read()
+        if not ok:
+            break
+        g = pre.upload(f)
+        overlay(g, postprocess(infer(pre(g)), (h, w)))
+    cap_w.release()
+    torch.cuda.synchronize()
+
+    t0 = time.perf_counter()
+    th = [threading.Thread(target=decoder, args=(t0,), daemon=True)]
+    if writer:
+        th.append(threading.Thread(target=encoder, daemon=True))
+    for t in th:
+        t.start()
+
+    lat, k = [], 0
+    while True:
+        item = q_in.get()
+        if item is None:
+            break
+        due, frame = item
+        g_bgr = pre.upload(frame)
+        vis = overlay(g_bgr, postprocess(infer(pre(g_bgr)), (h, w)))
+        if writer:
+            out_pin.copy_(vis)
+            q_out.put(out_pin.numpy().copy())
+        else:
+            torch.cuda.current_stream().synchronize()
+        lat.append((time.perf_counter() - due) * 1000)
+        k += 1
+    if writer:
+        q_out.put(None)
+    for t in th:
+        t.join(timeout=5)
+    torch.cuda.synchronize()
+    return np.array(lat), (time.perf_counter() - t0), k, qdepth
+
+
 def _open(path, hw_accel):
     if hw_accel:
         return cv2.VideoCapture(str(path), cv2.CAP_FFMPEG,
@@ -284,6 +359,9 @@ def main():
                          "fp16 (mac dinh) | tf32 | fp32 | duong dan .engine")
     ap.add_argument("--eager", action="store_true",
                     help="PyTorch eager, khong CUDA Graph — de lay moc baseline")
+    ap.add_argument("--live", default=None, metavar="FPS_LIST",
+                    help="do o nhip nguon that thay vi doc file toi da, "
+                         "vd --live 25,30,60 . Chi chay muc C.")
     ap.add_argument("--no-write", action="store_true", help="bo encode khoi vong do")
     ap.add_argument("--no-hw", action="store_true", help="tat hardware decode")
     ap.add_argument("--verify", action="store_true", help="chi kiem chung preprocess")
@@ -349,6 +427,36 @@ def main():
         assert writer.isOpened(), "VideoWriter khong mo duoc — thieu codec?"
         print(f"        ghi ra: {out_path} (mp4v)")
 
+    if args.live:
+        rates = [float(r) for r in args.live.split(",")]
+        print(f"\n{'='*78}\nC. NHIP NGUON THAT — frame toi deu dan, khong doc file toi da\n{'='*78}")
+        print(f"  {'nguon':>8} {'ngan sach':>10} | {'latency p50':>12}{'p99':>9}"
+              f"{'miss':>8} | {'FPS ra':>8} {'q max':>6}  ket luan")
+        print("  " + "-" * 76)
+        rows = []
+        for r in rates:
+            lat, secs, k, qd = run_live(path, pre, infer, args.n, hw, writer, r)
+            budget = 1000.0 / r
+            p50, p99 = np.percentile(lat, 50), np.percentile(lat, 99)
+            miss = (lat > budget).mean() * 100
+            drift = np.mean(lat[len(lat)//2:]) - np.mean(lat[:len(lat)//2])
+            ok = drift < budget * 0.5
+            rows.append(dict(src_fps=r, budget_ms=budget, p50=float(p50), p99=float(p99),
+                             miss_pct=float(miss), out_fps=k/secs, qmax=max(qd) if qd else 0,
+                             drift_ms=float(drift), keeps_up=bool(ok)))
+            print(f"  {r:7.0f}f {budget:9.1f}ms | {p50:11.2f}{p99:9.2f}{miss:7.1f}% |"
+                  f" {k/secs:7.1f} {max(qd) if qd else 0:6d}  "
+                  + ("theo kip" if ok else f"tut lai (+{drift:.0f} ms troi)"))
+        print(f"\n  'q max' = so frame ket o hang doi. Bo khong thi pipeline dang thua suc.")
+        print(f"  'troi'  = latency nua sau tru nua dau. Tang dan = khong theo kip.")
+        if writer:
+            writer.release()
+        save_result({"config": "live_feed_rate", "stage": "end_to_end",
+                     "video": path.name, "backend": backend, "n_frames": args.n,
+                     "write_video": writer is not None, "rates": rows,
+                     "env_after": query_gpu_state()})
+        return
+
     print(f"\n{'='*72}\nA. LATENCY — mot frame di het 8 khau, noi tiep\n"
           f"   (breakdown tung khau co sync + do lien mach khong sync)\n{'='*72}")
     stages, e2e = run_serial(cap, pre, infer, args.n, writer, path=path, hw=hw)
@@ -381,8 +489,8 @@ def main():
     print(f"  {k} frame trong {secs:.2f} s  ->  throughput = {fps_pipe:.1f} FPS")
     print(f"  so voi FPS suy ra tu latency ({1000/st.mean_ms:.1f})  ->  "
           f"{fps_pipe/(1000/st.mean_ms):.2f}x")
-    print("\n  pipelining khong giam latency, chi tang throughput.")
-    print("        Hai con so phai bao cao rieng.")
+    print("\n  pipelining khong giam latency (mot frame van qua du cac khau),")
+    print("        chi tang throughput. Hai con so phai bao cao rieng.")
     if writer:
         writer.release()
 
