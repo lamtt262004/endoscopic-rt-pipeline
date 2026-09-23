@@ -1,10 +1,10 @@
 """
 make_clip.py - cat doan dep nhat cua demo thanh clip ngan de nhung vao README.
-Chuyen luon moov len dau file de trinh duyet phat duoc ngay, khong phai doi
-tai het (OpenCV mac dinh ghi moov o cuoi).
+Xuat H.264 + faststart: OpenCV o day chi mo duoc mp4v, ma trinh duyet khong
+phat duoc codec do. Can imageio-ffmpeg.
 
     python src/make_clip.py                      # tu chon doan
-    python src/make_clip.py --secs 12 --start 219
+    python src/make_clip.py --secs 12 --crf 20   # net hon, nang hon
 """
 import argparse
 import json
@@ -15,6 +15,20 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "benchmarks"
+
+
+def to_h264(path, crf=23):
+    import subprocess
+    from imageio_ffmpeg import get_ffmpeg_exe
+
+    tmp = path.with_name(path.stem + "_h264.mp4")
+    cmd = [get_ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(path),
+           "-c:v", "libx264", "-preset", "slow", "-crf", str(crf),
+           "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", str(tmp)]
+    subprocess.run(cmd, check=True)
+    before = path.stat().st_size
+    tmp.replace(path)
+    return before, path.stat().st_size
 
 
 def faststart(path):
@@ -81,6 +95,8 @@ def main():
     ap.add_argument("--secs", type=float, default=12.0)
     ap.add_argument("--start", type=int, default=None)
     ap.add_argument("--probe", type=int, default=500)
+    ap.add_argument("--crf", type=int, default=23,
+                    help="chat luong H.264: thap hon = net hon, nang hon (18-28)")
     args = ap.parse_args()
 
     src = OUT_DIR / f"{args.src}.mp4"
@@ -115,14 +131,17 @@ def main():
     cap.release()
     wr.release()
 
-    moved = faststart(out)
+    try:
+        a, b = to_h264(out, args.crf)
+        note = f"H.264 crf {args.crf}, {a/1e6:.2f} -> {b/1e6:.2f} MB"
+    except Exception as e:
+        faststart(out)
+        note = f"ffmpeg khong chay duoc ({e}) - giu mp4v, trinh duyet se khong phat duoc"
+
     mb = out.stat().st_size / 1e6
     print(f"  {out.name}: {k} frame @ {fps:.0f} fps = {k/fps:.1f}s | {w}x{h} | {mb:.2f} MB")
-    print(f"  faststart: {'moov chuyen len dau, stream duoc ngay' if moved else 'khong can'}")
-    if mb > 10:
-        print(f"  vuot 10 MB - giam --secs")
-    else:
-        print(f"  trong gioi han 10 MB cua GitHub")
+    print(f"  {note}")
+    print(f"  {'vuot 10 MB - giam --secs hoac tang --crf' if mb > 10 else 'trong gioi han 10 MB cua GitHub'}")
 
 
 if __name__ == "__main__":
