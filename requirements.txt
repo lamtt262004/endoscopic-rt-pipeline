@@ -1,0 +1,23 @@
+
+# core
+torch==2.11.0+cu128          # install from https://download.pytorch.org/whl/cu128
+torchvision
+numpy>=1.24
+
+# model (PMFNet)
+timm==1.0.29
+pytorch-lightning==2.6.5
+albumentations>=1.1.0
+
+# video / imaging
+opencv-python==5.0.0
+pillow>=10.0                 # only for src/make_gif.py
+
+# ONNX
+onnx==1.23.0
+onnxruntime==1.23.2          # CPU build is enough; used only to verify the export
+onnxsim==0.7.3
+
+# TensorRT 
+tensorrt-cu12==10.16.1.11
+polygraphy==0.53.4

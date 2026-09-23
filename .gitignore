@@ -1,0 +1,48 @@
+# ── Data — never commit ────────────────────────────────────────────────
+Weights/
+Kvasir_images/
+hyper-kvasir-videos/
+
+# ── Build artefacts ────────────────────────────────────────────────────
+# .onnx is portable but large (118 MB); rebuild with src/export_onnx.py
+onnx/
+*.onnx
+
+# .engine is tied to a specific TensorRT + CUDA + GPU, and tactics are tuned
+# for that exact device. Always rebuild locally — never commit.
+engines/
+*.engine
+*.plan
+*.cache
+
+*.pth
+*.ckpt
+
+# ── Generated media ────────────────────────────────────────────────────
+# Keep: benchmarks/demo_polyp.gif  (embedded in README)
+# Keep: benchmarks/results.jsonl   (all measurements + their conditions)
+benchmarks/*.mp4
+benchmarks/*.avi
+benchmarks/_*
+benchmarks/_tmp/
+benchmarks/_smoke/
+!benchmarks/demo_polyp.gif
+!benchmarks/results.jsonl
+
+# ── Python ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+*.egg-info/
+
+# ── Editor / OS ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
+# ── Note ───────────────────────────────────────────────────────────────
+# PMFNet/ is the published paper's source and is intentionally NOT ignored,
+# so the repo is runnable. Remove that decision here if it should stay private.
