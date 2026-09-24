@@ -1,5 +1,5 @@
 """
-make_demo.py — xuat video demo co overlay, de nhin chu khong de do.
+make_demo.py 
 
     python src/make_demo.py                         # ca hai video (co polyp + khong polyp)
     python src/make_demo.py --n 600                 # dai hon
