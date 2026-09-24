@@ -62,11 +62,14 @@ subgraphs absorbing roughly 1100 operations between them.
 
 ## Operating point
 
-### Feed rate
+### Inference in isolation
 
 Everything above was measured while reading a video file as fast as the pipeline allows, so the GPU
 barely idles. A real endoscope sends a frame every **40 ms**; after ~15 ms of work the GPU sits idle
 for ~25 ms and clocks itself down.
+
+The table below isolates that one variable: a single engine call on a fixed tensor, with an enforced
+sleep between calls and nothing else competing for the GPU.
 
 | gap between frames | FP16 inference | SM clock |
 |---|---|---|
@@ -82,11 +85,11 @@ of how the benchmark feeds the GPU rather than a property of the deployment. For
 busy with filler work removes the effect completely, but costs more in median latency than it
 recovers in the tail.
 
-### Measured at the real feed rate
+### The full pipeline
 
-The table above times inference on its own, with the GPU forced to sit idle between calls. Running
-the full threaded pipeline instead, with frames arriving on a fixed cadence, gives a milder picture —
-three runs of 300 frames each:
+Running everything instead — three threads, a real video, frames released on a fixed cadence, and
+latency timed from when each frame arrives rather than from when the pipeline gets to it — gives a
+milder picture. Three runs of 300 frames each:
 
 | source | frame budget | latency p99 | over budget | output rate | queue depth |
 |---|---|---|---|---|---|
