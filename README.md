@@ -249,6 +249,5 @@ python src/video_infer.py --video 1de3ef0f --n 400
 
 ## Model
 
-**PMFNet** — a PVT-v2 backbone with a SEAB child encoder and multi-scale feature fusion, 29.59 M
-parameters, taking 256×256 RGB input and returning a probability map. Published as *"Polyp
+**PMFNet**. Published as *"Polyp
 Segmentation with Transformer-CNN Integration and Multi-Scale Feature Fusion"*, ATiGB 2025.
