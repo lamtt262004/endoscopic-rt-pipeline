@@ -123,15 +123,18 @@ latency tail is worse. Both calibrators give identical results.
 
 ### Reason
 
-Counting layers explains it: **36 of 436 layers actually execute INT8 kernels**, and every one of them
-is a convolution, no GEMM or MatMul at all. PVT-v2's transformer blocks were already absorbed into
-Myelin fusion subgraphs during the FP16 pass, and Myelin emits no INT8 path for those patterns, so
-quantization never reached the part that dominates runtime. That is also why the choice of calibrator
-makes no difference.
+**36 of the 436 layers actually execute INT8 kernels**: 35 convolutions and one pooling layer. No
+GEMM, no MatMul. The attention matmuls and the LayerNorms stayed in FP16, and those are most of a
+transformer backbone. Hence all three results at once: no speedup, no accuracy loss, no difference
+between calibrators. Nothing that mattered was quantized.
 
-Fusion did not cancel the quantization win so much as put it out of reach: once Myelin owns a
-subgraph it picks the kernel for the whole cluster, and it offers no INT8 one. The implicit
-calibration path has no way to reopen that decision.
+Fusion looks like the reason. At build time TensorRT splits the LayerNorms apart and folds the
+transformer blocks into 192 Myelin subgraphs, in every precision, not just FP16. Myelin picks one
+kernel per cluster and has no INT8 version, so only convolutions outside those clusters stayed
+eligible. That is read off the layer counts, not measured directly.
+
+A calibrator cannot settle a fight between two optimizations. Q/DQ nodes written into the ONNX
+before the build might. I have not tried it.
 
 ## Limitations
 
