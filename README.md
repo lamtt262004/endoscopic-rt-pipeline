@@ -44,7 +44,7 @@ configuration scores **0.9450**. The two sets are comparable within themselves b
 other, so both are quoted rather than merged. FP16 flips **0.0029 %** of pixels at the 0.5 threshold,
 about 2 in a 256×256 mask.
 
-https://github.com/user-attachments/assets/d9fab0f8-8124-47f0-9b6f-516df9858f45
+https://github.com/user-attachments/assets/ccac0cf0-5d2c-415b-bd4e-5dfeff407ba3
 
 The bottom row of the table, running: TensorRT FP16 engine, 720×576 source, overlay composed on the
 GPU. Mask area is printed per frame. Rendered by `src/make_demo.py --trt fp16`, so what is shown is
