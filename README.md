@@ -39,10 +39,10 @@ Tensor Cores even where the row says FP32. Only matmul TF32 differs: off in the 
 figure, on everywhere else.
 
 Precision does not move Dice. On 100 Kvasir-SEG images, PyTorch scores **0.9340** and all three
-engines **0.9339**; on a separate 200 images held out from the INT8 calibration set, every
-configuration scores **0.9450**. The two sets are comparable within themselves but not against each
-other, so both are quoted rather than merged. FP16 flips **0.0029 %** of pixels at the 0.5 threshold,
-about 2 in a 256×256 mask.
+engines **0.9339**; on a separate 200 images, held out from the calibration set used in
+[Quantization](#quantization) below, every configuration scores **0.9450**. The two sets are
+comparable within themselves but not against each other, so both are quoted rather than merged.
+FP16 flips **0.0029 %** of pixels at the 0.5 threshold, about 2 in a 256×256 mask.
 
 https://github.com/user-attachments/assets/ccac0cf0-5d2c-415b-bd4e-5dfeff407ba3
 
