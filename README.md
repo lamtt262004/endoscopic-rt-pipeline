@@ -7,14 +7,6 @@ Real-time polyp segmentation on endoscopic video, deployed with TensorRT.
 Take **PMFNet** (the polyp segmentation model I published at ATiGB 2025) from a PyTorch
 checkpoint to a video pipeline that runs on a 4 GB laptop GPU, and measure it honestly.
 
-Three questions set from the start:
-
-- How much speedup is available, and how much of it comes from each source (fusion, Tensor Cores, precision)?
-- At what point does speed start costing accuracy?
-- Do the numbers hold at the rate a real endoscope delivers frames?
-
-
-
 ## Performance
 
 ### Test setup
