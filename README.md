@@ -133,9 +133,6 @@ transformer blocks into 192 Myelin subgraphs, in every precision, not just FP16.
 kernel per cluster and has no INT8 version, so only convolutions outside those clusters stayed
 eligible. That is read off the layer counts, not measured directly.
 
-A calibrator cannot settle a fight between two optimizations. Q/DQ nodes written into the ONNX
-before the build might. I have not tried it.
-
 ## Limitations
 
 ### Still images vs video
