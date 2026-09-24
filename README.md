@@ -137,7 +137,7 @@ eligible. That is read off the layer counts, not measured directly.
 
 ### Still images vs video
 
-Dice 0.9450 is measured on still images and does not transfer to video. I checked this with a
+Dice around 0.94 is measured on still images and does not transfer to video. I checked this with a
 **negative control**: a video of a normal ileocecal valve, containing no polyp.
 
 | video | median mask area | frames with mask > 1 % |
@@ -148,9 +148,11 @@ Dice 0.9450 is measured on still images and does not transfer to video. I checke
 
 First 400 frames of each video, one run of `src/screen_videos.py`.
 
-The model separates a clearly visible polyp from the control, but is **indistinguishable from it on
-flat lesions**. Its largest false positive on the control video covers 32.8 % of the frame, more than
-its largest true positive on the polyp video, so no area threshold can separate the two.
+The model separates the small polyp from the control, but only weakly, and on flat lesions it is
+**indistinguishable**. Its largest detection on the control video covers 32.8 % of the frame, more
+than its largest detection on the polyp video, so no area threshold can separate the two. These
+videos carry one label each and no per-frame masks, so every detection on the polyp video is counted
+as correct and the real gap is wider than it looks.
 
 The failure mode is specific: it fires on **near, bright, in-focus mucosal wall** — folds, and tissue
 pressed against the scope. Kvasir-SEG contains no normal mucosa, no motion blur and no narrow-band
@@ -160,8 +162,9 @@ imaging, so the model never had a chance to learn to stay silent.
 
 False-positive and true-positive episodes have nearly the same duration distribution (medians of 1
 and 2 frames), so duration is not a feature that separates them: cutting false positives by 18 %
-costs 44 % of true detection episodes. Closing this gap needs **training data containing negative
-frames** (SUN-SEG, LDPolypVideo), not post-processing.
+costs 44 % of the true episodes, counted generously for the same lack of per-frame labels. Closing
+this gap needs **training data containing negative frames** (SUN-SEG, LDPolypVideo) rather than
+post-processing.
 
 ## Data
 
