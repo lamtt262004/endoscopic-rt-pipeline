@@ -1,4 +1,4 @@
-"""bench_utils.py — bo do nghe do dac dung chung."""
+"""bench_utils.py"""
 import json
 import subprocess
 import sys

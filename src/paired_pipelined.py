@@ -1,4 +1,4 @@
-"""Throughput pipelining cho 3 video, chay 2 vong A-B-C de thay do troi."""
+"""Throughput pipelining cho 3 video"""
 import subprocess, sys
 from pathlib import Path
 import cv2, torch

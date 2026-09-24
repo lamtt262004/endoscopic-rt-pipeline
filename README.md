@@ -24,17 +24,25 @@ checkpoint to a video pipeline that runs on a 4 GB laptop GPU, and measure it ho
 | configuration | inference | latency | throughput |
 |---|---|---|---|
 | PyTorch eager | 36.73 ms | 44.11 ms | 24.0 FPS |
-| PyTorch + CUDA Graphs + TF32 | 12.81 ms | 20.43 ms | 60.7 FPS |
-| TensorRT FP32 (TF32 disabled) | 11.60 ms | 19.00 ms | 66.0 FPS |
+| PyTorch + CUDA Graphs, TF32 matmul | 12.81 ms | 20.43 ms | 60.7 FPS |
+| TensorRT FP32, TF32 disabled | 11.60 ms | 19.00 ms | 66.0 FPS |
 | TensorRT TF32 | 10.84 ms | 18.56 ms | 69.4 FPS |
 | **TensorRT FP16** | **7.09 ms** | **15.26 ms** | **91.1 FPS** |
 
-**Inference** is the forward pass alone, with all five configurations interleaved in a single run.
-**Latency** and **throughput** come from the full video pipeline, again all five back to back in one
-session.
+**Inference** is the forward pass alone. The four accelerated rows were interleaved in one paired
+run; the eager baseline was measured in an earlier session, so read 36.73 ms as indicative rather
+than paired. **Latency** and **throughput** come from the full video pipeline, with all five
+configurations run back to back in a single session.
 
-Dice stays at **0.9450** across all five (200 held-out Kvasir-SEG images). FP16 flips only
-**0.0033 %** of pixels at the 0.5 threshold (about 2 pixels in a 256×256 mask).
+Every PyTorch row runs cuDNN with TF32 enabled, which is the library default, so convolutions reach
+Tensor Cores even where the row says FP32. Only matmul TF32 differs: off in the eager inference
+figure, on everywhere else.
+
+Precision does not move Dice. On 100 Kvasir-SEG images, PyTorch scores **0.9340** and all three
+engines **0.9339**; on a separate 200 images held out from the INT8 calibration set, every
+configuration scores **0.9450**. The two sets are comparable within themselves but not against each
+other, so both are quoted rather than merged. FP16 flips **0.0029 %** of pixels at the 0.5 threshold,
+about 2 in a 256×256 mask.
 
 https://github.com/user-attachments/assets/d9fab0f8-8124-47f0-9b6f-516df9858f45
 
@@ -118,7 +126,9 @@ Myelin fusion subgraphs during the FP16 pass, and Myelin emits no INT8 path for 
 quantization never reached the part that dominates runtime. That is also why the choice of calibrator
 makes no difference.
 
-The fusion win and the quantization win cancel each other out, and the implicit, calibration path cannot have both. 
+Fusion did not cancel the quantization win so much as put it out of reach: once Myelin owns a
+subgraph it picks the kernel for the whole cluster, and it offers no INT8 one. The implicit
+calibration path has no way to reopen that decision.
 
 ## Limitations
 
@@ -129,12 +139,14 @@ Dice 0.9450 is measured on still images and does not transfer to video. I checke
 
 | video | median mask area | frames with mask > 1 % |
 |---|---|---|
-| small polyp | 1.17 % | 52 % |
+| small polyp | 1.08 % | 52 % |
 | flat polyp | 0.00 % | 30 % |
-| no polyp | 0.00 % | 30 % |
+| no polyp | 0.00 % | 27 % |
+
+First 400 frames of each video, one run of `src/screen_videos.py`.
 
 The model separates a clearly visible polyp from the control, but is **indistinguishable from it on
-flat lesions**. Its largest false positive on the control video covers 32.7 % of the frame, more than
+flat lesions**. Its largest false positive on the control video covers 32.8 % of the frame, more than
 its largest true positive on the polyp video, so no area threshold can separate the two.
 
 The failure mode is specific: it fires on **near, bright, in-focus mucosal wall** — folds, and tissue
@@ -237,8 +249,6 @@ python src/video_infer.py --video 1de3ef0f --n 400
 
 ## Model
 
-**PMFNet** . Published as *"Polyp
+**PMFNet** — a PVT-v2 backbone with a SEAB child encoder and multi-scale feature fusion, 29.59 M
+parameters, taking 256×256 RGB input and returning a probability map. Published as *"Polyp
 Segmentation with Transformer-CNN Integration and Multi-Scale Feature Fusion"*, ATiGB 2025.
-
-
-

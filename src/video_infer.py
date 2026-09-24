@@ -1,5 +1,5 @@
 """
-video_infer.py — Pipeline video hoan chinh + do breakdown tung khau.
+video_infer.py
 
     python src/video_infer.py --verify              # kiem tra preprocess GPU == cv2 (lam truoc)
     python src/video_infer.py --list polyp          # xem co nhung video nao

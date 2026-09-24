@@ -25,8 +25,8 @@ VIDEO_DIR = ROOT / "hyper-kvasir-videos" / "videos"
 OUT_DIR = ROOT / "benchmarks"
 
 TARGETS = {
-    "polyp":   ("76866169", "small polyp",           "co polyp (small polyp)"),
-    "nopolyp": ("164c76bd", "cecum ileocecal valve", "khong co polyp (van hoi manh trang)"),
+    "polyp":   ("76866169", "small polyp",           "polyp present (small polyp)"),
+    "nopolyp": ("164c76bd", "cecum ileocecal valve", "no polyp (ileocecal valve)"),
 }
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
@@ -40,7 +40,7 @@ def draw_hud(img, title, area_pct, idx, n):
     img[0:box_h, 0:420] = (sub * 0.35).astype(np.uint8)
 
     cv2.putText(img, title, (pad, 26), FONT, 0.62, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(img, f"mask: {area_pct:5.2f}% khung hinh", (pad, 52),
+    cv2.putText(img, f"mask: {area_pct:5.2f}% of frame", (pad, 52),
                 FONT, 0.55, (120, 220, 255), 1, cv2.LINE_AA)
 
     bar_w, bar_x, bar_y = 260, pad, 66

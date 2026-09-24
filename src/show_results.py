@@ -1,5 +1,5 @@
 """
-show_results.py — doc lai benchmarks/results.jsonl cho de nhin.
+show_results.py
 
     python src/show_results.py          # bang tom tat
     python src/show_results.py -v       # kem dieu kien do (tf32, clock, nhiet)

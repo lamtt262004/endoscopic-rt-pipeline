@@ -1,4 +1,4 @@
-"""So 3 video theo kieu paired - xen ke vong."""
+"""So 3 video theo kieu paired"""
 import subprocess
 import sys
 import time
