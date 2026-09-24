@@ -214,7 +214,6 @@ python src/video_infer.py --video 1de3ef0f --n 400
 |---|---|
 | `make_demo.py` | paired demo videos, with and without a polyp |
 | `make_clip.py` | trims the demo to the clip embedded above |
-| `make_gif.py` | gif export, if a self-playing image is preferred |
 
 ## Model
 
