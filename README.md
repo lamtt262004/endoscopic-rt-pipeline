@@ -134,7 +134,7 @@ frames** (SUN-SEG, LDPolypVideo), not post-processing.
 |---|---|
 | `Kvasir_images/segmented-images/{images,masks}/` | [Kvasir-SEG](https://datasets.simula.no/kvasir-seg/) — 1000 polyp images with masks |
 | `hyper-kvasir-videos/videos/*.avi` | [HyperKvasir](https://datasets.simula.no/hyper-kvasir/) — labelled videos, 720×576 @ 25 fps |
-| `hyper-kvasir-videos/video-annotations.csv` | ships with HyperKvasir |
+| `hyper-kvasir-videos/video-annotations.csv` | HyperKvasir |
 
 ## Usage
 
